@@ -28,7 +28,7 @@ function RegisterPage() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div>
       <h1>Inscription</h1>
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "400px" }}>

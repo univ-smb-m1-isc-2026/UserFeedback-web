@@ -22,7 +22,7 @@ function LoginPage() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div>
       <h1>Connexion</h1>
 
       <form

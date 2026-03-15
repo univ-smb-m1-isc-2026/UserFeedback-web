@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8080";
+const API_URL = "http://localhost:8080";
 
 export async function registerUser(data: {
   username: string;
@@ -15,6 +15,25 @@ export async function registerUser(data: {
 
   if (!response.ok) {
     throw new Error("Erreur lors de l'inscription");
+  }
+
+  return response.json();
+}
+
+export async function loginUser(data: {
+  email: string;
+  password: string;
+}) {
+  const response = await fetch(`${API_URL}/api/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error("Erreur lors de la connexion");
   }
 
   return response.json();

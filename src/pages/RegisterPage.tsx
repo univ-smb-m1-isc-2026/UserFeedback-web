@@ -28,10 +28,10 @@ function RegisterPage() {
   };
 
   return (
-    <div>
+    <div className="form-container">
       <h1>Inscription</h1>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "400px" }}>
+      <form onSubmit={handleSubmit} className="stack">
         <input
           type="text"
           placeholder="Nom d'utilisateur"
@@ -56,7 +56,7 @@ function RegisterPage() {
         <button type="submit">S'inscrire</button>
       </form>
 
-      <p>{message}</p>
+      <p className="message">{message}</p>
     </div>
   );
 }

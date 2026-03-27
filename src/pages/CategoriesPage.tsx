@@ -3,7 +3,7 @@ import { getCategories } from "../api/categories";
 
 interface Category {
   id: number;
-  name: string;
+  title: string;
   description: string;
 }
 
@@ -29,10 +29,10 @@ function CategoriesPage() {
 
       {categories.length === 0 && <p>Aucune catégorie</p>}
 
-      <ul>
+      <ul className="list-reset stack">
         {categories.map((category) => (
-          <li key={category.id}>
-            <strong>{category.name}</strong>
+          <li key={category.id} className="card">
+            <strong>{category.title}</strong>
             <p>{category.description}</p>
           </li>
         ))}

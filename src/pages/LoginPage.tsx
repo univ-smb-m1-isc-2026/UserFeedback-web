@@ -22,13 +22,10 @@ function LoginPage() {
   };
 
   return (
-    <div>
+    <div className="form-container">
       <h1>Connexion</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "400px" }}
-      >
+      <form onSubmit={handleSubmit} className="stack">
         <input
           type="email"
           placeholder="Adresse email"
@@ -46,7 +43,7 @@ function LoginPage() {
         <button type="submit">Se connecter</button>
       </form>
 
-      <p>{message}</p>
+      <p className="message">{message}</p>
     </div>
   );
 }

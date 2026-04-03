@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { loginUser } from "../api/auth";
+import { setConnectedUser } from "../api/storage";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ function LoginPage() {
     try {
       const user = await loginUser({ email, password });
       setMessage(`Connecté : ${user.username}`);
-      localStorage.setItem("user", JSON.stringify(user));
+      setConnectedUser(user);
       setEmail("");
       setPassword("");
     } catch (error) {

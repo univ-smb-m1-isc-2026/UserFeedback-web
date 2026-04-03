@@ -2,7 +2,6 @@ export interface ConnectedUser {
   id: number;
   username: string;
   email: string;
-  password: string;
   role: string;
 }
 
@@ -14,4 +13,12 @@ export function getConnectedUser(): ConnectedUser | null {
   }
 
   return JSON.parse(rawUser);
+}
+
+export function setConnectedUser(user: ConnectedUser) {
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+export function clearConnectedUser() {
+  localStorage.removeItem("user");
 }

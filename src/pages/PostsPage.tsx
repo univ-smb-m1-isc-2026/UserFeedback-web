@@ -62,15 +62,22 @@ function PostsPage() {
 
   const loadAll = async () => {
     try {
-      const [postsData, repliesData, votesData] = await Promise.all([
-        getPosts(),
-        getReplies(),
-        getVotes(),
-      ]);
+      const userId = 1;
 
+      const postsData = await getPosts(userId);
       setPosts(postsData);
-      setReplies(repliesData);
+
+      const repliesPerPost = await Promise.all(
+        postsData.map((post: { id: number; }) =>
+          getReplies(post.id, userId)
+        )
+      );
+
+      setReplies(repliesPerPost.flat());
+
+      const votesData = await getVotes();
       setVotes(votesData);
+
     } catch (error) {
       console.error(error);
     }
@@ -143,58 +150,54 @@ function PostsPage() {
   return (
     <div>
       <h1>Posts</h1>
-      <p>{message}</p>
+      <p className="message">{message}</p>
 
       {posts.length === 0 && <p>Aucun post</p>}
 
-      <ul style={{ display: "flex", flexDirection: "column", gap: "1rem", padding: 0, listStyle: "none" }}>
+      <ul className="posts-list list-reset">
         {posts.map((post) => {
           const postReplies = getRepliesForPost(post.id);
 
           return (
-            <li key={post.id} style={{ border: "1px solid #ccc", padding: "1rem", borderRadius: "8px" }}>
+            <li key={post.id} className="card">
               <h2>{post.title}</h2>
               <p>{post.content}</p>
-              <p><strong>Visibilité :</strong> {post.visibility}</p>
-              <p><strong>Auteur :</strong> {post.author?.username}</p>
-              <p><strong>Catégorie :</strong> {post.category?.title}</p>
-              <p><strong>Score :</strong> {getPostScore(post.id)}</p>
 
-              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+              <p className="meta">
+                {post.author?.username} • {post.category?.title} • {post.visibility}
+              </p>
+
+              <div className="vote-row">
                 <button onClick={() => handleVotePost(post.id, 1)}>+1</button>
                 <button onClick={() => handleVotePost(post.id, -1)}>-1</button>
+                <span className="score-badge">{getPostScore(post.id)}</span>
               </div>
 
-              <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid #ddd" }}>
-                <h3>Réponses</h3>
+              <h3 className="section-title">Réponses</h3>
 
-                {postReplies.length === 0 ? (
-                  <p>Aucune réponse</p>
-                ) : (
-                  <ul style={{ padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                    {postReplies.map((reply) => (
-                      <li
-                        key={reply.id}
-                        style={{
-                          backgroundColor: "#f7f7f7",
-                          padding: "0.75rem",
-                          borderRadius: "6px",
-                        }}
-                      >
-                        <p>{reply.content}</p>
-                        <p><strong>Auteur :</strong> {reply.author?.username}</p>
-                        <p><strong>Visibilité :</strong> {reply.visibility}</p>
-                        <p><strong>Score :</strong> {getReplyScore(reply.id)}</p>
+              {postReplies.length === 0 ? (
+                <p>Aucune réponse</p>
+              ) : (
+                <div className="stack">
+                  {postReplies.map((reply) => (
+                    <div key={reply.id} className="reply-card">
+                      <p>{reply.content}</p>
 
-                        <div style={{ display: "flex", gap: "0.5rem" }}>
-                          <button onClick={() => handleVoteReply(reply.id, 1)}>+1</button>
-                          <button onClick={() => handleVoteReply(reply.id, -1)}>-1</button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                      <p className="meta">
+                        {reply.author?.username} • {reply.visibility}
+                      </p>
+
+                      <div className="vote-row">
+                        <button onClick={() => handleVoteReply(reply.id, 1)}>+1</button>
+                        <button onClick={() => handleVoteReply(reply.id, -1)}>-1</button>
+                        <span className="score-badge">
+                          {getReplyScore(reply.id)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </li>
           );
         })}

@@ -21,7 +21,9 @@ function CreateReplyPage() {
 
   const loadPosts = async () => {
     try {
-      const data = await getPosts();
+      const connectedUser = getConnectedUser();
+      if (!connectedUser) return;
+      const data = await getPosts(connectedUser.id);
       setPosts(data);
     } catch (error) {
       console.error(error);

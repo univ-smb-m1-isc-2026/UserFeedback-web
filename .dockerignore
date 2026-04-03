@@ -4,3 +4,9 @@ dist
 .github
 .vscode
 .idea
+npm-debug.log
+.DS_Store
+.env
+.env.local
+/*.md
+src/test

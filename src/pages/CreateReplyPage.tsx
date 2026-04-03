@@ -6,11 +6,15 @@ import { getConnectedUser } from "../api/storage";
 interface Post {
   id: number;
   title: string;
+  isPublic?: boolean;
+  group?: {
+    id: number;
+  } | null;
 }
 
 function CreateReplyPage() {
   const [content, setContent] = useState("");
-  const [visibility, setVisibility] = useState("PUBLIC");
+  const [isPublic, setIsPublic] = useState(true);
   const [postId, setPostId] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [message, setMessage] = useState("");
@@ -23,6 +27,7 @@ function CreateReplyPage() {
     try {
       const connectedUser = getConnectedUser();
       if (!connectedUser) return;
+
       const data = await getPosts(connectedUser.id);
       setPosts(data);
     } catch (error) {
@@ -40,17 +45,20 @@ function CreateReplyPage() {
       return;
     }
 
+    const selectedPost = posts.find((p) => p.id === Number(postId));
+
     try {
       await createReply({
         content,
-        visibility,
+        isPublic,
+        groupId: selectedPost?.group?.id ?? null,
         authorId: connectedUser.id,
         postId: Number(postId),
       });
 
       setMessage("Réponse créée avec succès");
       setContent("");
-      setVisibility("PUBLIC");
+      setIsPublic(true);
       setPostId("");
     } catch (error) {
       setMessage("Erreur lors de la création de la réponse");
@@ -64,7 +72,12 @@ function CreateReplyPage() {
 
       <form
         onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "500px" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          maxWidth: "500px",
+        }}
       >
         <textarea
           placeholder="Contenu de la réponse"
@@ -73,11 +86,16 @@ function CreateReplyPage() {
           rows={5}
         />
 
-        <select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
+        {/* visibilité */}
+        <select
+          value={isPublic ? "PUBLIC" : "PRIVATE"}
+          onChange={(e) => setIsPublic(e.target.value === "PUBLIC")}
+        >
           <option value="PUBLIC">PUBLIC</option>
           <option value="PRIVATE">PRIVATE</option>
         </select>
 
+        {/* choix du post */}
         <select value={postId} onChange={(e) => setPostId(e.target.value)}>
           <option value="">Choisir un post</option>
           {posts.map((post) => (

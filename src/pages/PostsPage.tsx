@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getPosts } from "../api/posts";
-import { getReplies } from "../api/replies";
+import { getReplies, createReply } from "../api/replies";
 import { createVote, getVotes } from "../api/votes";
 import { getConnectedUser } from "../api/storage";
 
@@ -22,14 +22,19 @@ interface Post {
   title: string;
   content: string;
   visibility: string;
+  isPublic?: boolean;
+  group?: {
+    id: number;
+  } | null;
   author: Author;
-  category: Category;
+  category?: Category;
 }
 
 interface Reply {
   id: number;
   content: string;
   visibility: string;
+  isPublic?: boolean;
   author: Author;
   post: {
     id: number;
@@ -55,6 +60,9 @@ function PostsPage() {
   const [replies, setReplies] = useState<Reply[]>([]);
   const [votes, setVotes] = useState<Vote[]>([]);
   const [message, setMessage] = useState("");
+  const [replyContents, setReplyContents] = useState<Record<number, string>>({});
+
+  const connectedUser = getConnectedUser();
 
   useEffect(() => {
     loadAll();
@@ -62,22 +70,19 @@ function PostsPage() {
 
   const loadAll = async () => {
     try {
-      const userId = 1;
+      const userId = connectedUser?.id ?? 1;
 
       const postsData = await getPosts(userId);
       setPosts(postsData);
 
       const repliesPerPost = await Promise.all(
-        postsData.map((post: { id: number; }) =>
-          getReplies(post.id, userId)
-        )
+        postsData.map((post: { id: number; }) => getReplies(post.id, userId))
       );
 
       setReplies(repliesPerPost.flat());
 
       const votesData = await getVotes();
       setVotes(votesData);
-
     } catch (error) {
       console.error(error);
     }
@@ -100,8 +105,6 @@ function PostsPage() {
   };
 
   const handleVotePost = async (postId: number, value: number) => {
-    const connectedUser = getConnectedUser();
-
     if (!connectedUser) {
       setMessage("Vous devez être connecté pour voter");
       return;
@@ -115,7 +118,7 @@ function PostsPage() {
         replyId: null,
       });
 
-      setMessage("Vote ajouté");
+      setMessage("");
       await loadAll();
     } catch (error) {
       setMessage("Erreur lors du vote");
@@ -124,8 +127,6 @@ function PostsPage() {
   };
 
   const handleVoteReply = async (replyId: number, value: number) => {
-    const connectedUser = getConnectedUser();
-
     if (!connectedUser) {
       setMessage("Vous devez être connecté pour voter");
       return;
@@ -139,10 +140,52 @@ function PostsPage() {
         replyId,
       });
 
-      setMessage("Vote ajouté");
+      setMessage("");
       await loadAll();
     } catch (error) {
       setMessage("Erreur lors du vote");
+      console.error(error);
+    }
+  };
+
+  const handleReplyChange = (postId: number, value: string) => {
+    setReplyContents((prev) => ({
+      ...prev,
+      [postId]: value,
+    }));
+  };
+
+  const handleCreateReply = async (post: Post) => {
+    if (!connectedUser) {
+      setMessage("Vous devez être connecté pour répondre");
+      return;
+    }
+
+    const content = replyContents[post.id]?.trim();
+
+    if (!content) {
+      setMessage("La réponse ne peut pas être vide");
+      return;
+    }
+
+    try {
+      await createReply({
+        content,
+        isPublic: post.isPublic ?? true,
+        groupId: post.group?.id ?? null,
+        authorId: connectedUser.id,
+        postId: post.id,
+      });
+
+      setReplyContents((prev) => ({
+        ...prev,
+        [post.id]: "",
+      }));
+
+      setMessage("");
+      await loadAll();
+    } catch (error) {
+      setMessage("Erreur lors de la création de la réponse");
       console.error(error);
     }
   };
@@ -164,7 +207,8 @@ function PostsPage() {
               <p>{post.content}</p>
 
               <p className="meta">
-                {post.author?.username} • {post.category?.title} • {post.visibility}
+                {post.author?.username} • {post.category?.title ?? "Sans catégorie"} •{" "}
+                {post.isPublic ? "PUBLIC" : "PRIVATE"}
               </p>
 
               <div className="vote-row">
@@ -172,6 +216,20 @@ function PostsPage() {
                 <button onClick={() => handleVotePost(post.id, -1)}>-1</button>
                 <span className="score-badge">{getPostScore(post.id)}</span>
               </div>
+
+              {connectedUser && (
+                <div className="stack" style={{ marginTop: "1rem" }}>
+                  <textarea
+                    placeholder="Écrire une réponse..."
+                    rows={3}
+                    value={replyContents[post.id] ?? ""}
+                    onChange={(e) => handleReplyChange(post.id, e.target.value)}
+                  />
+                  <div>
+                    <button onClick={() => handleCreateReply(post)}>Répondre</button>
+                  </div>
+                </div>
+              )}
 
               <h3 className="section-title">Réponses</h3>
 
@@ -184,15 +242,13 @@ function PostsPage() {
                       <p>{reply.content}</p>
 
                       <p className="meta">
-                        {reply.author?.username} • {reply.visibility}
+                        {reply.author?.username} • {reply.isPublic ? "PUBLIC" : "PRIVATE"}
                       </p>
 
                       <div className="vote-row">
                         <button onClick={() => handleVoteReply(reply.id, 1)}>+1</button>
                         <button onClick={() => handleVoteReply(reply.id, -1)}>-1</button>
-                        <span className="score-badge">
-                          {getReplyScore(reply.id)}
-                        </span>
+                        <span className="score-badge">{getReplyScore(reply.id)}</span>
                       </div>
                     </div>
                   ))}

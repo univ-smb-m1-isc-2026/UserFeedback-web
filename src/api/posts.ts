@@ -1,21 +1,22 @@
 const API_URL = "http://localhost:8080";
 
 export async function getPosts(userId: number) {
-  const response = await fetch(`${API_URL}/api/posts/visible/${userId}`)
+  const response = await fetch(`${API_URL}/api/posts/visible/${userId}`);
 
   if (!response.ok) {
-    throw new Error("Erreur lors du chargement des posts")
+    throw new Error("Erreur lors du chargement des posts");
   }
 
-  return response.json()
+  return response.json();
 }
 
 export async function createPost(data: {
   title: string;
   content: string;
-  visibility: string;
+  isPublic: boolean;
   authorId: number;
-  categoryId: number;
+  groupId: number | null;
+  categoryId: number | null;
 }) {
   const response = await fetch(`${API_URL}/api/posts`, {
     method: "POST",

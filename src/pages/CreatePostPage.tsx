@@ -1,7 +1,20 @@
 import { useEffect, useState } from "react";
 import { createPost } from "../api/posts";
+import { getUserGroups } from "../api/groups";
 import { getCategories } from "../api/categories";
 import { getConnectedUser } from "../api/storage";
+
+interface UserGroup {
+  id: number;
+  name: string;
+}
+
+interface GroupMembership {
+  id: number;
+  active: boolean;
+  hasLeft: boolean;
+  group: UserGroup;
+}
 
 interface Category {
   id: number;
@@ -12,14 +25,29 @@ interface Category {
 function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [visibility, setVisibility] = useState("PUBLIC");
+  const [isPublic, setIsPublic] = useState(true);
+  const [groupId, setGroupId] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [groups, setGroups] = useState<GroupMembership[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    loadGroups();
     loadCategories();
   }, []);
+
+  const loadGroups = async () => {
+    try {
+      const connectedUser = getConnectedUser();
+      if (!connectedUser) return;
+
+      const data = await getUserGroups(connectedUser.id);
+      setGroups(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const loadCategories = async () => {
     try {
@@ -40,19 +68,31 @@ function CreatePostPage() {
       return;
     }
 
+    if (!title.trim() || !content.trim()) {
+      setMessage("Titre et contenu obligatoires");
+      return;
+    }
+
+    if (!isPublic && !groupId) {
+      setMessage("Un post privé doit être lié à un groupe");
+      return;
+    }
+
     try {
       await createPost({
         title,
         content,
-        visibility,
+        isPublic,
         authorId: connectedUser.id,
-        categoryId: Number(categoryId),
+        groupId: isPublic ? null : Number(groupId),
+        categoryId: categoryId ? Number(categoryId) : null,
       });
 
       setMessage("Post créé avec succès");
       setTitle("");
       setContent("");
-      setVisibility("PUBLIC");
+      setIsPublic(true);
+      setGroupId("");
       setCategoryId("");
     } catch (error) {
       setMessage("Erreur lors de la création du post");
@@ -61,13 +101,10 @@ function CreatePostPage() {
   };
 
   return (
-    <div>
+    <div className="form-container card">
       <h1>Créer un post</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "500px" }}
-      >
+      <form onSubmit={handleSubmit} className="stack">
         <input
           type="text"
           placeholder="Titre"
@@ -82,7 +119,10 @@ function CreatePostPage() {
           rows={5}
         />
 
-        <select value={visibility} onChange={(e) => setVisibility(e.target.value)}>
+        <select
+          value={isPublic ? "PUBLIC" : "PRIVATE"}
+          onChange={(e) => setIsPublic(e.target.value === "PUBLIC")}
+        >
           <option value="PUBLIC">PUBLIC</option>
           <option value="PRIVATE">PRIVATE</option>
         </select>
@@ -96,10 +136,21 @@ function CreatePostPage() {
           ))}
         </select>
 
+        {!isPublic && (
+          <select value={groupId} onChange={(e) => setGroupId(e.target.value)}>
+            <option value="">Choisir un groupe</option>
+            {groups.map((membership) => (
+              <option key={membership.group.id} value={membership.group.id}>
+                {membership.group.name}
+              </option>
+            ))}
+          </select>
+        )}
+
         <button type="submit">Créer</button>
       </form>
 
-      <p>{message}</p>
+      <p className="message">{message}</p>
     </div>
   );
 }

@@ -28,5 +28,11 @@ export async function createVote(data: {
     throw new Error("Erreur lors de la création du vote");
   }
 
-  return response.json();
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  return JSON.parse(text);
 }

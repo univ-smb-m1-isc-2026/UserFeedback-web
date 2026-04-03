@@ -212,8 +212,12 @@ function PostsPage() {
               </p>
 
               <div className="vote-row">
-                <button onClick={() => handleVotePost(post.id, 1)}>+1</button>
-                <button onClick={() => handleVotePost(post.id, -1)}>-1</button>
+                {connectedUser && (
+                  <>
+                    <button onClick={() => handleVotePost(post.id, 1)}>+1</button>
+                    <button onClick={() => handleVotePost(post.id, -1)}>-1</button>
+                  </>
+                )}
                 <span className="score-badge">{getPostScore(post.id)}</span>
               </div>
 
@@ -246,9 +250,15 @@ function PostsPage() {
                       </p>
 
                       <div className="vote-row">
-                        <button onClick={() => handleVoteReply(reply.id, 1)}>+1</button>
-                        <button onClick={() => handleVoteReply(reply.id, -1)}>-1</button>
-                        <span className="score-badge">{getReplyScore(reply.id)}</span>
+                        {connectedUser && (
+                          <>
+                            <button onClick={() => handleVoteReply(reply.id, 1)}>+1</button>
+                            <button onClick={() => handleVoteReply(reply.id, -1)}>-1</button>
+                          </>
+                        )}
+                        <span className="score-badge">
+                          {getReplyScore(reply.id)}
+                        </span>
                       </div>
                     </div>
                   ))}

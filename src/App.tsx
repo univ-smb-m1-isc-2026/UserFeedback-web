@@ -4,11 +4,12 @@ import LoginPage from "./pages/LoginPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import PostsPage from "./pages/PostsPage";
 import CreatePostPage from "./pages/CreatePostPage";
+import GroupsPage from "./pages/GroupsPage";
 import { clearConnectedUser, getConnectedUser, type ConnectedUser } from "./api/storage";
 
 function App() {
   const [page, setPage] = useState<
-    "posts" | "login" | "register" | "categories" | "create-post"
+  "posts" | "login" | "register" | "categories" | "groups" | "create-post"
   >("posts");
 
   const [connectedUser, setConnectedUserState] = useState<ConnectedUser | null>(null);
@@ -47,6 +48,10 @@ function App() {
             Catégories
           </button>
 
+          <button className="secondary" onClick={() => setPage("groups")}>
+            Groupes
+          </button>
+
           {connectedUser ? (
             <>
               <button onClick={() => setPage("create-post")}>+ Post</button>
@@ -76,6 +81,7 @@ function App() {
         {page === "login" && <LoginPage />}
         {page === "register" && <RegisterPage />}
         {page === "create-post" && connectedUser && <CreatePostPage />}
+        {page === "groups" && <GroupsPage />}
       </main>
     </div>
   );

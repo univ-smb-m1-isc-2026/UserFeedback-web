@@ -17,6 +17,11 @@ body {
   min-height: 100vh;
 }
 
+body.dark-mode {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
 button,
 input,
 select,
@@ -104,12 +109,24 @@ textarea {
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.98);
+  border: 2px solid #cbd5e1;
+  border-left: 6px solid #2563eb;
   border-radius: 18px;
   padding: 1.2rem;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.1rem;
+}
+
+.reply-card {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #64748b;
+  border-radius: 14px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+  margin-left: 0.4rem;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .list-reset {
@@ -122,13 +139,6 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.reply-card {
-  background: #f8fafc;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 0.9rem;
 }
 
 .form-container {
@@ -176,4 +186,95 @@ textarea {
   margin-bottom: 0.75rem;
   font-size: 1rem;
   color: #111827;
+}
+
+/* Reddit-like ergonomic theme */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.topbar .subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.theme-toggle {
+  background: none;
+  border: 1px solid #cbd5e1;
+  color: #1f2937;
+  border-radius: 999px;
+  padding: 0.6rem 0.9rem;
+}
+
+.page-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.page-footer .theme-toggle {
+  font-size: 0.95rem;
+}
+
+.card {
+  border-left: 6px solid #2563eb;
+}
+
+.reply-card {
+  border-left: 4px solid #64748b;
+}
+
+.page-container {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.page-container.dark-mode {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.page-container.dark-mode .topbar {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.page-container.dark-mode .card,
+.page-container.dark-mode .reply-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.page-container.dark-mode input,
+.page-container.dark-mode textarea,
+.page-container.dark-mode select {
+  background: #0f172a;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+.page-container.dark-mode button {
+  background: #2563eb;
+  color: white;
+}
+
+.dark-mode .message {
+  color: #60a5fa;
 }

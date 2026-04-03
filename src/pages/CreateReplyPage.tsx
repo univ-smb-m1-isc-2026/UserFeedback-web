@@ -6,7 +6,7 @@ import { getConnectedUser } from "../api/storage";
 interface Post {
   id: number;
   title: string;
-  isPublic?: boolean;
+  public: boolean;
   group?: {
     id: number;
   } | null;
@@ -14,7 +14,6 @@ interface Post {
 
 function CreateReplyPage() {
   const [content, setContent] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
   const [postId, setPostId] = useState("");
   const [posts, setPosts] = useState<Post[]>([]);
   const [message, setMessage] = useState("");
@@ -45,20 +44,34 @@ function CreateReplyPage() {
       return;
     }
 
+    if (!content.trim()) {
+      setMessage("Le contenu de la réponse est obligatoire");
+      return;
+    }
+
+    if (!postId) {
+      setMessage("Vous devez choisir un post");
+      return;
+    }
+
     const selectedPost = posts.find((p) => p.id === Number(postId));
+
+    if (!selectedPost) {
+      setMessage("Post introuvable");
+      return;
+    }
 
     try {
       await createReply({
         content,
-        isPublic,
-        groupId: selectedPost?.group?.id ?? null,
+        isPublic: selectedPost.public,
+        groupId: selectedPost.group?.id ?? null,
         authorId: connectedUser.id,
         postId: Number(postId),
       });
 
       setMessage("Réponse créée avec succès");
       setContent("");
-      setIsPublic(true);
       setPostId("");
     } catch (error) {
       setMessage("Erreur lors de la création de la réponse");
@@ -67,18 +80,10 @@ function CreateReplyPage() {
   };
 
   return (
-    <div>
+    <div className="form-container card">
       <h1>Créer une réponse</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          maxWidth: "500px",
-        }}
-      >
+      <form onSubmit={handleSubmit} className="stack">
         <textarea
           placeholder="Contenu de la réponse"
           value={content}
@@ -86,21 +91,11 @@ function CreateReplyPage() {
           rows={5}
         />
 
-        {/* visibilité */}
-        <select
-          value={isPublic ? "PUBLIC" : "PRIVATE"}
-          onChange={(e) => setIsPublic(e.target.value === "PUBLIC")}
-        >
-          <option value="PUBLIC">PUBLIC</option>
-          <option value="PRIVATE">PRIVATE</option>
-        </select>
-
-        {/* choix du post */}
         <select value={postId} onChange={(e) => setPostId(e.target.value)}>
           <option value="">Choisir un post</option>
           {posts.map((post) => (
             <option key={post.id} value={post.id}>
-              {post.title}
+              {post.title} - {post.public ? "PUBLIC" : "PRIVATE"}
             </option>
           ))}
         </select>
@@ -108,7 +103,7 @@ function CreateReplyPage() {
         <button type="submit">Créer</button>
       </form>
 
-      <p>{message}</p>
+      <p className="message">{message}</p>
     </div>
   );
 }

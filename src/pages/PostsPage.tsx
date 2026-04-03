@@ -21,24 +21,23 @@ interface Post {
   id: number;
   title: string;
   content: string;
-  visibility: string;
-  isPublic?: boolean;
-  group?: {
-    id: number;
-  } | null;
   author: Author;
   category?: Category;
+  group?: {
+    id: number;
+    name: string;
+  } | null;
+  public: boolean;
 }
 
 interface Reply {
   id: number;
   content: string;
-  visibility: string;
-  isPublic?: boolean;
   author: Author;
   post: {
     id: number;
   };
+  public: boolean;
 }
 
 interface Vote {
@@ -61,12 +60,20 @@ function PostsPage() {
   const [votes, setVotes] = useState<Vote[]>([]);
   const [message, setMessage] = useState("");
   const [replyContents, setReplyContents] = useState<Record<number, string>>({});
+  const [darkMode, setDarkMode] = useState(false);
 
   const connectedUser = getConnectedUser();
 
   useEffect(() => {
     loadAll();
   }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", darkMode);
+    return () => {
+      document.body.classList.remove("dark-mode");
+    };
+  }, [darkMode]);
 
   const loadAll = async () => {
     try {
@@ -171,7 +178,7 @@ function PostsPage() {
     try {
       await createReply({
         content,
-        isPublic: post.isPublic ?? true,
+        isPublic: post.public,
         groupId: post.group?.id ?? null,
         authorId: connectedUser.id,
         postId: post.id,
@@ -191,8 +198,17 @@ function PostsPage() {
   };
 
   return (
-    <div>
-      <h1>Posts</h1>
+    <div className={`page-container ${darkMode ? "dark-mode" : ""}`}>
+      <header className="topbar">
+        <div>
+          <h1>UserFeedback</h1>
+          <p className="subtitle">Flux de feedback communautaire, ergonomie moderne</p>
+        </div>
+        <button className="theme-toggle" onClick={() => setDarkMode((prev) => !prev)}>
+          {darkMode ? "☀️ Mode clair" : "🌙 Mode sombre"}
+        </button>
+      </header>
+
       <p className="message">{message}</p>
 
       {posts.length === 0 && <p>Aucun post</p>}
@@ -208,7 +224,7 @@ function PostsPage() {
 
               <p className="meta">
                 {post.author?.username} • {post.category?.title ?? "Sans catégorie"} •{" "}
-                {post.isPublic ? "PUBLIC" : "PRIVATE"}
+                {post.public ? "PUBLIC" : "PRIVATE"}
               </p>
 
               <div className="vote-row">
@@ -246,7 +262,7 @@ function PostsPage() {
                       <p>{reply.content}</p>
 
                       <p className="meta">
-                        {reply.author?.username} • {reply.isPublic ? "PUBLIC" : "PRIVATE"}
+                        {reply.author?.username} • {reply.public ? "PUBLIC" : "PRIVATE"}
                       </p>
 
                       <div className="vote-row">
@@ -268,6 +284,12 @@ function PostsPage() {
           );
         })}
       </ul>
+
+      <footer className="page-footer">
+        <button className="theme-toggle" onClick={() => setDarkMode((prev) => !prev)}>
+          {darkMode ? "☀️ Mode clair" : "🌙 Mode sombre"}
+        </button>
+      </footer>
     </div>
   );
 }
